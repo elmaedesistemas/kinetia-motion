@@ -9,15 +9,6 @@ import Foundation
 import Testing
 @testable import KinetiaMotion
 
-/// 0 → peak → 0 in 10° steps, at ~24 FPS.
-private func oneRep(peak: Double, upperArm: Double = 0, startingAt start: TimeInterval = 0) -> [Pose] {
-    let up = Array(stride(from: 0.0, through: peak, by: 10))
-    let angles = up + up.reversed().dropFirst()
-    return angles.enumerated().map { index, angle in
-        elbowPose(flexion: angle, upperArm: upperArm, time: start + Double(index) / 24)
-    }
-}
-
 private func makeEngine() -> RepEngine {
     var engine = RepEngine(definition: ExerciseLibrary.elbowFlexion, side: .right)
     engine.smoothing = 1 // deterministic tests

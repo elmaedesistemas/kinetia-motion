@@ -26,3 +26,13 @@ func isClose(_ value: Double?, _ expected: Double) -> Bool {
     guard let value else { return false }
     return abs(value - expected) < 0.001
 }
+
+
+/// 0 → peak → 0 in 10° steps, at ~24 FPS.
+func oneRep(peak: Double, upperArm: Double = 0, startingAt start: TimeInterval = 0) -> [Pose] {
+    let up = Array(stride(from: 0.0, through: peak, by: 10))
+    let angles = up + up.reversed().dropFirst()
+    return angles.enumerated().map { index, angle in
+        elbowPose(flexion: angle, upperArm: upperArm, time: start + Double(index) / 24)
+    }
+}
