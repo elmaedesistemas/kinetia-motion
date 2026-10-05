@@ -70,3 +70,67 @@ struct MotionSessionTests {
         #expect(session.snapshot.missingJoints == [.leftHip, .leftKnee, .leftAnkle])
     }
 }
+
+
+@MainActor
+@Suite("MotionSession · first measurement")
+struct BaselineTests {
+    private func makeSession() -> MotionSession {
+        MotionSession(exercise: ExerciseLibrary.elbowFlexion, side: .right, smoothing: 1)
+    }
+
+    @Test func finishesAfterThreeCleanReps() {
+        let session = makeSession()
+        session.startBaseline()
+
+        let poses = oneRep(peak: 110) + oneRep(peak: 130, startingAt: 2) + oneRep(peak: 120, startingAt: 4)
+        let events = poses.flatMap { session.process($0) }
+
+        #expect(session.snapshot.baseline?.repsDone == 3)
+        #expect(isClose(session.snapshot.baseline?.result, 120))
+        #expect(events.contains(.baselineCompleted(120)))
+    }
+
+    @Test func rejectedRepsDoNotCount() {
+        let session = makeSession()
+        session.startBaseline()
+
+        let cheating = oneRep(peak: 150, upperArm: 60)
+        let clean = oneRep(peak: 100, startingAt: 2) + oneRep(peak: 110, startingAt: 4) + oneRep(peak: 120, startingAt: 6)
+        (cheating + clean).forEach { session.process($0) }
+
+        #expect(session.snapshot.rejectedCount == 1)
+        #expect(isClose(session.snapshot.baseline?.result, 110))   // 150 never counted
+    }
+
+    @Test func canFinishEarly() {
+        let session = makeSession()
+        session.startBaseline()
+        (oneRep(peak: 100) + oneRep(peak: 120, startingAt: 2)).forEach { session.process($0) }
+
+        #expect(session.snapshot.baseline?.isFinished == false)
+        session.finishBaseline()
+        #expect(isClose(session.snapshot.baseline?.result, 110))
+    }
+
+    @Test func resultStaysFixedAfterFinishing() {
+        let session = makeSession()
+        session.startBaseline()
+        let poses = oneRep(peak: 110) + oneRep(peak: 120, startingAt: 2) + oneRep(peak: 130, startingAt: 4)
+            + oneRep(peak: 160, startingAt: 6)
+        poses.forEach { session.process($0) }
+
+        #expect(session.snapshot.repCount == 4)
+        #expect(isClose(session.snapshot.baseline?.result, 120))
+    }
+
+    @Test func cancelClearsIt() {
+        let session = makeSession()
+        session.startBaseline()
+        oneRep(peak: 110).forEach { session.process($0) }
+        session.cancelBaseline()
+
+        #expect(session.snapshot.baseline == nil)
+        #expect(session.snapshot.repCount == 0)
+    }
+}

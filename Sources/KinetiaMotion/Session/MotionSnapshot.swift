@@ -12,6 +12,16 @@ public struct Visibility: Sendable, Equatable {
     public let missingJoints: [Joint]
 }
 
+/// Progress of a first measurement ("baseline").
+public struct BaselineProgress: Sendable, Equatable {
+    public var repsDone: Int
+    public let repsNeeded: Int
+    /// Set when the measurement is finished.
+    public var result: Double?
+
+    public var isFinished: Bool { result != nil }
+}
+
 /// Everything a screen needs to draw the session, in one value.
 public struct MotionSnapshot: Sendable, Equatable {
     /// Current smoothed value of the exercise's primary measure.
@@ -23,6 +33,7 @@ public struct MotionSnapshot: Sendable, Equatable {
     public var isVisible = false
     public var missingJoints: [Joint] = []
     public var isRunning = false
+    public var baseline: BaselineProgress?
 
     public init() {}
 }

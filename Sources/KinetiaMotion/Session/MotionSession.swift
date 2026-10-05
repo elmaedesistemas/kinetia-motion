@@ -15,6 +15,7 @@ import Observation
 /// session.start(with: camera)
 /// for await event in session.events() { … }
 /// ```
+@available(iOS 17.0, *)
 @available(macOS 14.0, *)
 @MainActor
 @Observable
@@ -78,6 +79,7 @@ public final class MotionSession {
         snapshot.best = engine.best
         snapshot.repCount = engine.count
         snapshot.rejectedCount = engine.rejected.count
+        events += updateBaseline()
 
         for event in events {
             switch event {
@@ -108,6 +110,45 @@ public final class MotionSession {
         snapshot = MotionSnapshot()
         snapshot.isRunning = running
         snapshot.missingJoints = requiredJoints
+    }
+    
+    // MARK: - First measurement
+
+    /// Starts a first measurement: counts from zero and finishes after `reps` clean reps.
+    /// Rejected reps don't count, so the starting point is measured with good form.
+    public func startBaseline(reps: Int = 3) {
+        reset()
+        snapshot.baseline = BaselineProgress(repsDone: 0, repsNeeded: reps, result: nil)
+    }
+
+    /// Finishes early with the clean reps done so far (at least one).
+    public func finishBaseline() {
+        guard var baseline = snapshot.baseline, !baseline.isFinished,
+              let value = engine.peaks.median else { return }
+        baseline.result = value
+        snapshot.baseline = baseline
+        emit(.baselineCompleted(value))
+    }
+
+    /// Leaves the first measurement without a result.
+    public func cancelBaseline() {
+        reset()
+    }
+
+    private func updateBaseline() -> [MotionEvent] {
+        guard var baseline = snapshot.baseline, !baseline.isFinished else { return [] }
+
+        baseline.repsDone = min(engine.count, baseline.repsNeeded)
+        var events: [MotionEvent] = []
+
+        if engine.count >= baseline.repsNeeded,
+           let value = Array(engine.peaks.prefix(baseline.repsNeeded)).median {
+            baseline.result = value
+            events.append(.baselineCompleted(value))
+        }
+
+        snapshot.baseline = baseline
+        return events
     }
 
     // MARK: - Events

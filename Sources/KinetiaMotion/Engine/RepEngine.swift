@@ -25,6 +25,8 @@ public enum MotionEvent: Sendable, Equatable {
     case formFault(FormFeedback)
     /// The required joints came into view or left it (debounced).
     case visibilityChanged(Visibility)
+    /// The first measurement finished: median of the clean reps' peaks.
+    case baselineCompleted(Double)
 }
 
 /// Turns a stream of poses into reps, checking form along the way.

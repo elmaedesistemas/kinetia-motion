@@ -30,7 +30,19 @@ public struct RecordedPoseProvider: PoseProvider {
                     if realTime, let previous {
                         let gap = max(0, pose.timestamp - previous)
                         if #available(macOS 13.0, *) {
-                            try? await Task.sleep(for: .seconds(gap))
+                            if #available(iOS 16.0, *) {
+                                try? await Task.sleep(for: .seconds(gap))
+                            } else {
+                                // Fallback on earlier versions
+                            };if #available(iOS 16.0, *) {
+                                try? await Task.sleep(for: .seconds(gap))
+                            } else {
+                                // Fallback on earlier versions
+                            };if #available(iOS 16.0, *) {
+                                try? await Task.sleep(for: .seconds(gap))
+                            } else {
+                                // Fallback on earlier versions
+                            }
                         } else {
                             // Fallback on earlier versions
                         }
