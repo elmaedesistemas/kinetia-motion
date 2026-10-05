@@ -23,6 +23,9 @@ public final class MotionSession {
     public private(set) var snapshot = MotionSnapshot()
     public private(set) var exercise: ExerciseDefinition
     public private(set) var side: BodySide
+    
+    /// Peaks of the clean reps so far. Read it when saving a session.
+    public var peaks: [Double] { engine.peaks }
 
     /// Frames in a row before visibility flips (~0.25 s at 24 FPS).
     @ObservationIgnored public var framesToConfirmVisibility = 6

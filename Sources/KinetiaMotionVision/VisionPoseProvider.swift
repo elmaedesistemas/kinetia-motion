@@ -145,7 +145,7 @@ extension VisionPoseProvider: AVCaptureVideoDataOutputSampleBufferDelegate {
         }
 
         // An empty pose still matters: it tells the session the person left the frame.
-        yield(Pose(points: points, timestamp: timestamp))
+        yield(Pose(points: points, timestamp: timestamp, imageSize: imageSize))
     }
 }
 #endif

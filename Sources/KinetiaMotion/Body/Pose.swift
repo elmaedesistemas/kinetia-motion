@@ -17,12 +17,15 @@ import Foundation
 public struct Pose: Sendable {
     public var points: [Joint: CGPoint]
     public var timestamp: TimeInterval
-    
-    public init(points: [Joint: CGPoint], timestamp: TimeInterval) {
+    /// Size of the image the points were measured in. Lets a UI draw them over the camera.
+    public var imageSize: CGSize?
+
+    public init(points: [Joint: CGPoint], timestamp: TimeInterval, imageSize: CGSize? = nil) {
         self.points = points
         self.timestamp = timestamp
+        self.imageSize = imageSize
     }
-    
+
     public subscript(joint: Joint) -> CGPoint? {
         points[joint]
     }
