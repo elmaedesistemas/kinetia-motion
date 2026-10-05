@@ -23,6 +23,8 @@ public enum MotionEvent: Sendable, Equatable {
     case repRejected(Rep)
     /// Live cue while moving: fired once per rep per fault.
     case formFault(FormFeedback)
+    /// The required joints came into view or left it (debounced).
+    case visibilityChanged(Visibility)
 }
 
 /// Turns a stream of poses into reps, checking form along the way.
